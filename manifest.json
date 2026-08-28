@@ -1,13 +1,18 @@
 {
+  "id": "/",
   "name": "BOQ & QS Estimator - Highrise RCC",
   "short_name": "BOQ Estimator",
-  "description": "Bill of Quantities and QS estimation tool for Pakistani highrise RCC construction projects.",
+  "description": "Bill of Quantities and Quantity Surveying estimation tool for Pakistani highrise RCC construction projects, using standard industry thumb-rule coefficients.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
   "orientation": "portrait",
   "background_color": "#f7f9fb",
   "theme_color": "#1e5f8c",
+  "lang": "en-PK",
+  "dir": "ltr",
+  "categories": ["business", "productivity", "utilities"],
   "icons": [
     {
       "src": "icon-192.png",
