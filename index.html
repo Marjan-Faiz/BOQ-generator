@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>BOQ Estimator - Highrise RCC | Pakistan</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1e5f8c">
+<link rel="apple-touch-icon" href="icon-180.png">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{
+  --primary:#1e5f8c;
+  --primary-dark:#144766;
+  --primary-light:#e8f1f8;
+  --accent:#2e8b57;
+  --bg:#f7f9fb;
+  --card:#ffffff;
+  --border:#dde5ec;
+  --text:#1f2d3a;
+  --text-muted:#6b7c8c;
+  --danger:#c0392b;
+  --radius:10px;
+  --shadow:0 2px 8px rgba(30,95,140,0.08);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{
+  font-family:'Segoe UI',Roboto,Arial,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  line-height:1.5;
+  padding-bottom:40px;
+}
+.app-header{
+  background:linear-gradient(135deg,var(--primary),var(--primary-dark));
+  color:#fff;
+  padding:20px 16px;
+  text-align:center;
+  box-shadow:var(--shadow);
+}
+.app-header h1{font-size:1.3rem;font-weight:600;}
+.app-header p{font-size:0.8rem;opacity:0.85;margin-top:4px;}
+
+.stepper{
+  display:flex;
+  overflow-x:auto;
+  background:var(--card);
+  padding:12px 10px;
+  gap:6px;
+  border-bottom:1px solid var(--border);
+  position:sticky;
+  top:0;
+  z-index:10;
+}
+.step-dot{
+  flex:1;
+  min-width:60px;
+  text-align:center;
+  font-size:0.65rem;
+  color:var(--text-muted);
+  padding:6px 2px;
+  border-radius:8px;
+  cursor:pointer;
+  transition:0.2s;
+  border-bottom:3px solid var(--border);
+}
+.step-dot.active{color:var(--primary);border-bottom-color:var(--primary);font-weight:600;}
+.step-dot.done{color:var(--accent);border-bottom-color:var(--accent);}
+.step-num{
+  display:block;
+  width:22px;height:22px;
+  line-height:22px;
+  border-radius:50%;
+  background:var(--border);
+  color:#fff;
+  margin:0 auto 4px;
+  font-size:0.7rem;
+}
+.step-dot.active .step-num{background:var(--primary);}
+.step-dot.done .step-num{background:var(--accent);}
+
+.container{max-width:640px;margin:0 auto;padding:16px;}
+.card{
+  background:var(--card);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  padding:20px;
+  margin-bottom:16px;
+  border:1px solid var(--border);
+}
+.card h2{font-size:1.05rem;color:var(--primary-dark);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.card h2 .icon{font-size:1.2rem;}
+
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:0.82rem;font-weight:600;color:var(--text);margin-bottom:5px;}
+.field .hint{font-size:0.72rem;color:var(--text-muted);margin-top:3px;}
+input[type=text],input[type=number],select{
+  width:100%;
+  padding:10px 12px;
+  border:1px solid var(--border);
+  border-radius:8px;
+  font-size:0.9rem;
+  background:#fff;
+  color:var(--text);
+}
+input:focus,select:focus{outline:none;border-color:var(--primary);}
+.row{display:flex;gap:10px;}
+.row .field{flex:1;}
+
+.toggle-group{display:flex;gap:8px;flex-wrap:wrap;}
+.toggle-btn{
+  padding:8px 14px;
+  border:1px solid var(--border);
+  border-radius:20px;
+  font-size:0.8rem;
+  background:#fff;
+  cursor:pointer;
+  color:var(--text-muted);
+  transition:0.15s;
+}
+.toggle-btn.selected{background:var(--primary);color:#fff;border-color:var(--primary);}
+
+.nav-buttons{display:flex;gap:10px;margin-top:20px;}
+.btn{
+  flex:1;
+  padding:13px;
+  border:none;
+  border-radius:8px;
+  font-size:0.9rem;
+  font-weight:600;
+  cursor:pointer;
+  transition:0.15s;
+}
+.btn-primary{background:var(--primary);color:#fff;}
+.btn-primary:hover{background:var(--primary-dark);}
+.btn-secondary{background:#fff;color:var(--primary);border:1px solid var(--primary);}
+.btn-secondary:hover{background:var(--primary-light);}
+.btn-export{background:var(--accent);color:#fff;}
+.btn-export:hover{background:#256b45;}
+.btn:disabled{opacity:0.5;cursor:not-allowed;}
+
+.summary-table{width:100%;border-collapse:collapse;margin-top:8px;font-size:0.85rem;}
+.summary-table th,.summary-table td{padding:8px 6px;text-align:left;border-bottom:1px solid var(--border);}
+.summary-table th{color:var(--text-muted);font-weight:600;font-size:0.75rem;text-transform:uppercase;}
+.summary-table td.num{text-align:right;font-variant-numeric:tabular-nums;}
+.summary-table tr.total td{font-weight:700;color:var(--primary-dark);border-top:2px solid var(--primary);font-size:0.95rem;}
+
+.note-box{
+  background:var(--primary-light);
+  border-left:3px solid var(--primary);
+  padding:10px 12px;
+  border-radius:6px;
+  font-size:0.78rem;
+  color:var(--primary-dark);
+  margin-bottom:14px;
+}
+.badge{display:inline-block;background:var(--primary-light);color:var(--primary-dark);font-size:0.7rem;padding:2px 8px;border-radius:10px;margin-left:6px;}
+footer{text-align:center;color:var(--text-muted);font-size:0.72rem;padding:20px;}
+@media(max-width:400px){.row{flex-direction:column;}}
+</style>
+</head>
+<body>
+
+<div class="app-header">
+  <h1>BOQ &amp; QS Estimator</h1>
+  <p>Highrise RCC Construction — Pakistan Thumb-Rule Estimation</p>
+</div>
+
+<div class="stepper" id="stepper"></div>
+
+<div class="container" id="stepContainer"></div>
+
+<footer>Estimates based on standard Pakistani highrise RCC thumb-rule coefficients. Verify with detailed structural design before tendering.</footer>
+
+<script>
+/* ===================== STATE ===================== */
+const state = {
+  project: { name:'', location:'', city:'Lahore', plotArea:0, coveredAreaPerFloor:0, floors:10, basements:0, floorHeight:10, usage:'Residential' },
+  structural: { system:'RCC Frame', slabType:'Flat Slab', slabThickness:6, columnSize:'18x24', beamDepth:18, concreteGrade:'3000 psi', steelRatio:'Medium (2.5%)' },
+  foundation: { soilType:'Medium', foundationType:'Raft Foundation', excavationDepth:8, waterTable:'Deep (>15ft)' },
+  finishing: { brickWork:'4.5" & 9"', plasterType:'Sand-Cement 1:6', flooring:'Tiles (Ceramic)', paintType:'Emulsion (Standard)', kitchenGrade:'Standard' },
+  mep: { electricalGrade:'Standard', plumbingGrade:'Standard', hvac:'Split AC Provision', elevator:1, generator:'Yes', fireFighting:'Yes' }
+};
+let currentStep = 0;
+const steps = ['Project Info','Structural System','Excavation & Foundation','Masonry & Finishing','MEP & Services','Review & Export'];
+
+/* ===================== THUMB RULE COEFFICIENTS (Pakistan Highrise RCC) ===================== */
+// Rates in PKR per sqft (approx market thumb-rules; editable defaults)
+const RATES = {
+  concrete: { rate_per_sqft: 550 },      // structural concrete work
+  steelReinforcement: {
+    'Light (2.0%)': 3.8, 'Medium (2.5%)': 4.2, 'Heavy (3.0%)': 4.8 // kg per sqft covered area (thumb rule)
+  },
+  steelRate: 285, // PKR per kg
+  cementBagsPerSqft: 0.4, // bags per sqft covered area
+  cementBagRate: 1550,
+  brickWork: { rate_per_sqft: 145 },
+  plaster: { rate_per_sqft: 65 },
+  flooring: {
+    'Tiles (Ceramic)': 210, 'Tiles (Porcelain)': 320, 'Marble': 450, 'Granite': 520
+  },
+  paint: { 'Emulsion (Standard)': 55, 'Emulsion (Premium)': 85, 'Distemper': 35 },
+  excavation_per_cft: 55,
+  foundationRate: { 'Isolated Footing':480, 'Combined Footing':560, 'Raft Foundation':680, 'Pile Foundation':850 },
+  electrical: { 'Basic':180, 'Standard':260, 'Premium':380 },
+  plumbing: { 'Basic':150, 'Standard':220, 'Premium':320 },
+  elevatorCostEach: 3800000,
+  generatorCost: 1200000,
+  fireFightingRate: 45,
+  hvacRate: { 'None':0, 'Split AC Provision':40, 'Centralized Ducting':180 }
+};
+
+/* ===================== RENDER STEPPER ===================== */
+function renderStepper(){
+  const el = document.getElementById('stepper');
+  el.innerHTML = steps.map((s,i)=>{
+    const cls = i===currentStep?'active':(i<currentStep?'done':'');
+    return `<div class="step-dot ${cls}" onclick="goToStep(${i})"><span class="step-num">${i+1}</span>${s}</div>`;
+  }).join('');
+}
+function goToStep(i){ if(i<=currentStep || i===currentStep+1 || i<steps.length){ currentStep=i; render(); } }
+
+/* ===================== FIELD HELPERS ===================== */
+function field(label, id, type, value, hint, extra){
+  return `<div class="field"><label>${label}</label>
+    <input type="${type}" id="${id}" value="${value}" ${extra||''}>
+    ${hint?`<div class="hint">${hint}</div>`:''}
+  </div>`;
+}
+function selectField(label, id, options, selected, hint){
+  return `<div class="field"><label>${label}</label>
+    <select id="${id}">
+      ${options.map(o=>`<option value="${o}" ${o===selected?'selected':''}>${o}</option>`).join('')}
+    </select>
+    ${hint?`<div class="hint">${hint}</div>`:''}
+  </div>`;
+}
+function toggleField(label, id, options, selected){
+  return `<div class="field"><label>${label}</label>
+    <div class="toggle-group" id="${id}">
+      ${options.map(o=>`<div class="toggle-btn ${o===selected?'selected':''}" data-val="${o}" onclick="selectToggle('${id}','${o}')">${o}</div>`).join('')}
+    </div></div>`;
+}
+function selectToggle(groupId,val){
+  document.querySelectorAll(`#${groupId} .toggle-btn`).forEach(b=>{
+    b.classList.toggle('selected', b.dataset.val===val);
+  });
+}
+function getToggleVal(groupId){
+  const sel = document.querySelector(`#${groupId} .toggle-btn.selected`);
+  return sel ? sel.dataset.val : '';
+}
+
+/* ===================== STEP RENDERERS ===================== */
+function renderStep0(){
+  const p = state.project;
+  return `<div class="card">
+    <h2><span class="icon">🏗️</span> Project Information</h2>
+    ${field('Project Name','pName','text',p.name,'','placeholder="e.g. Al-Noor Heights"')}
+    ${selectField('City','pCity',['Lahore','Karachi','Islamabad','Rawalpindi','Faisalabad','Multan','Peshawar','Other'],p.city)}
+    ${field('Location / Address','pLocation','text',p.location)}
+    <div class="row">
+      ${field('Plot Area (sqft)','pPlotArea','number',p.plotArea)}
+      ${field('Covered Area per Floor (sqft)','pCoveredArea','number',p.coveredAreaPerFloor)}
+    </div>
+    <div class="row">
+      ${field('No. of Floors (above ground)','pFloors','number',p.floors)}
+      ${field('No. of Basements','pBasements','number',p.basements)}
+    </div>
+    ${field('Typical Floor-to-Floor Height (ft)','pHeight','number',p.floorHeight)}
+    ${toggleField('Building Usage','pUsage',['Residential','Commercial','Mixed-Use'],p.usage)}
+  </div>`;
+}
+function renderStep1(){
+  const s = state.structural;
+  return `<div class="card">
+    <h2><span class="icon">🏛️</span> Structural System</h2>
+    <div class="note-box">Thumb-rule coefficients applied per sqft of total covered area, standard for Pakistani highrise RCC framed structures.</div>
+    ${toggleField('Structural System','sSystem',['RCC Frame','Shear Wall + Frame','Flat Slab System'],s.system)}
+    ${toggleField('Slab Type','sSlabType',['Flat Slab','Beam & Slab','Waffle Slab'],s.slabType)}
+    <div class="row">
+      ${field('Slab Thickness (inch)','sSlabThk','number',s.slabThickness)}
+      ${field('Avg. Beam Depth (inch)','sBeamDepth','number',s.beamDepth)}
+    </div>
+    ${field('Typical Column Size (inch)','sColSize','text',s.columnSize)}
+    ${selectField('Concrete Grade','sConcGrade',['3000 psi','3500 psi','4000 psi','4500 psi'],s.concreteGrade)}
+    ${selectField('Steel Reinforcement Ratio','sSteelRatio',Object.keys(RATES.steelReinforcement),s.steelRatio,'Thumb rule: kg of steel per sqft covered area')}
+  </div>`;
+}
+function renderStep2(){
+  const f = state.foundation;
+  return `<div class="card">
+    <h2><span class="icon">⛏️</span> Excavation &amp; Foundation</h2>
+    ${toggleField('Soil Type','fSoil',['Soft','Medium','Hard/Rocky'],f.soilType)}
+    ${selectField('Foundation Type','fType',Object.keys(RATES.foundationRate),f.foundationType,'Raft/Pile recommended for highrise (G+8 and above)')}
+    <div class="row">
+      ${field('Avg. Excavation Depth (ft)','fDepth','number',f.excavationDepth)}
+      ${selectField('Ground Water Table','fWater',['Shallow (<10ft)','Medium (10-15ft)','Deep (>15ft)'],f.waterTable)}
+    </div>
+  </div>`;
+}
+function renderStep3(){
+  const m = state.finishing;
+  return `<div class="card">
+    <h2><span class="icon">🧱</span> Masonry &amp; Finishing</h2>
+    ${selectField('Brick Work Thickness','mBrick',['4.5" & 9"','9" only','4.5" only (partitions)'],m.brickWork)}
+    ${selectField('Plaster Type','mPlaster',['Sand-Cement 1:6','Sand-Cement 1:4','Gypsum Plaster'],m.plasterType)}
+    ${selectField('Flooring','mFlooring',Object.keys(RATES.flooring),m.flooring)}
+    ${selectField('Paint Type','mPaint',Object.keys(RATES.paint),m.paintType)}
+    ${toggleField('Kitchen & Bath Fixtures Grade','mKitchen',['Economy','Standard','Premium'],m.kitchenGrade)}
+  </div>`;
+}
+function renderStep4(){
+  const e = state.mep;
+  return `<div class="card">
+    <h2><span class="icon">⚡</span> MEP &amp; Services</h2>
+    ${toggleField('Electrical Wiring Grade','eElectrical',Object.keys(RATES.electrical),e.electricalGrade)}
+    ${toggleField('Plumbing Grade','ePlumbing',Object.keys(RATES.plumbing),e.plumbingGrade)}
+    ${selectField('HVAC / Cooling Provision','eHvac',Object.keys(RATES.hvacRate),e.hvac)}
+    <div class="row">
+      ${field('No. of Elevators','eElevator','number',e.elevator)}
+      ${toggleField('Standby Generator','eGenerator',['Yes','No'],e.generator)}
+    </div>
+    ${toggleField('Fire Fighting System','eFire',['Yes','No'],e.fireFighting)}
+  </div>`;
+}
+
+/* ===================== CALCULATION ENGINE ===================== */
+function calculate(){
+  const p = state.project;
+  const totalFloors = Number(p.floors) + Number(p.basements);
+  const totalCoveredArea = Number(p.coveredAreaPerFloor) * totalFloors;
+
+  // Civil / Structural
+  const concreteCost = totalCoveredArea * RATES.concrete.rate_per_sqft;
+  const steelKgPerSqft = RATES.steelReinforcement[state.structural.steelRatio];
+  const steelKg = totalCoveredArea * steelKgPerSqft;
+  const steelCost = steelKg * RATES.steelRate;
+  const cementBags = totalCoveredArea * RATES.cementBagsPerSqft;
+  const cementCost = cementBags * RATES.cementBagRate;
+
+  // Excavation & Foundation
+  const footprint = Number(p.coveredAreaPerFloor);
+  const excavationVolCft = footprint * Number(p.foundationDepthUsed || 0);
+  const excavationCost = 0; // computed below with depth
+  const foundationRate = RATES.foundationRate[state.foundation.foundationType];
+  const foundationCost = footprint * foundationRate;
+  const excavationCostCalc = footprint * Number(state.foundation.excavationDepth) * RATES.excavation_per_cft / 27; // approx per cft to per sqft conv
+
+  // Masonry & Finishing
+  const brickWorkCost = totalCoveredArea * RATES.brickWork.rate_per_sqft;
+  const plasterCost = totalCoveredArea * RATES.plaster.rate_per_sqft;
+  const flooringRate = RATES.flooring[state.finishing.flooring];
+  const flooringCost = totalCoveredArea * flooringRate;
+  const paintRate = RATES.paint[state.finishing.paintType];
+  const paintCost = totalCoveredArea * paintRate;
+
+  // MEP
+  const electricalRate = RATES.electrical[state.mep.electricalGrade];
+  const electricalCost = totalCoveredArea * electricalRate;
+  const plumbingRate = RATES.plumbing[state.mep.plumbingGrade];
+  const plumbingCost = totalCoveredArea * plumbingRate;
+  const hvacRate = RATES.hvacRate[state.mep.hvac];
+  const hvacCost = totalCoveredArea * hvacRate;
+  const elevatorCost = Number(state.mep.elevator) * RATES.elevatorCostEach;
+  const generatorCost = state.mep.generator === 'Yes' ? RATES.generatorCost : 0;
+  const fireFightingCost = state.mep.fireFighting === 'Yes' ? totalCoveredArea * RATES.fireFightingRate : 0;
+
+  const civilTotal = concreteCost + steelCost + cementCost + foundationCost + excavationCostCalc;
+  const finishingTotal = brickWorkCost + plasterCost + flooringCost + paintCost;
+  const mepTotal = electricalCost + plumbingCost + hvacCost + elevatorCost + generatorCost + fireFightingCost;
+  const grandTotal = civilTotal + finishingTotal + mepTotal;
+
+  return {
+    totalFloors, totalCoveredArea,
+    civil: { concreteCost, steelKg, steelCost, cementBags, cementCost, foundationCost, excavationCostCalc, total: civilTotal },
+    finishing: { brickWorkCost, plasterCost, flooringCost, paintCost, total: finishingTotal },
+    mep: { electricalCost, plumbingCost, hvacCost, elevatorCost, generatorCost, fireFightingCost, total: mepTotal },
+    grandTotal
+  };
+}
+
+function fmt(n){ return Math.round(n).toLocaleString('en-PK'); }
+
+function renderStep5(){
+  const r = calculate();
+  return `<div class="card">
+    <h2><span class="icon">📊</span> Review &amp; Export</h2>
+    <div class="note-box">Total Covered Area: <b>${fmt(r.totalCoveredArea)} sqft</b> across ${r.totalFloors} level(s). Rates based on standard thumb-rule coefficients — adjust in a future version for city-specific market rates.</div>
+    <table class="summary-table">
+      <tr><th>Category</th><th class="num">Amount (PKR)</th></tr>
+      <tr><td>Civil / Structural BOQ</td><td class="num">${fmt(r.civil.total)}</td></tr>
+      <tr><td>Finishing BOQ</td><td class="num">${fmt(r.finishing.total)}</td></tr>
+      <tr><td>MEP BOQ</td><td class="num">${fmt(r.mep.total)}</td></tr>
+      <tr class="total"><td>Grand Total (Estimated)</td><td class="num">${fmt(r.grandTotal)}</td></tr>
+    </table>
+    <div class="hint" style="margin-top:8px;">≈ PKR ${fmt(r.grandTotal / r.totalCoveredArea)} per sqft of covered area</div>
+  </div>
+  <div class="card">
+    <h2><span class="icon">📥</span> Export Workbook</h2>
+    <p class="hint">Downloads a 4-sheet Excel file: Summary, Civil BOQ, Finishing BOQ, MEP BOQ — with live formulas.</p>
+    <button class="btn btn-export" style="width:100%;margin-top:10px;" onclick="exportExcel()">Download Excel BOQ (.xlsx)</button>
+  </div>`;
+}
+
+/* ===================== EXCEL EXPORT (SheetJS) ===================== */
+function exportExcel(){
+  const r = calculate();
+  const p = state.project, s = state.structural, f = state.foundation, m = state.finishing, e = state.mep;
+  const wb = XLSX.utils.book_new();
+
+  const summary = [
+    ['BOQ & QS SUMMARY - HIGHRISE RCC ESTIMATION'],
+    [],
+    ['Project Name', p.name],
+    ['Location', p.location + ', ' + p.city],
+    ['Plot Area (sqft)', p.plotArea],
+    ['Covered Area per Floor (sqft)', p.coveredAreaPerFloor],
+    ['Total Floors (incl. basements)', r.totalFloors],
+    ['Total Covered Area (sqft)', r.totalCoveredArea],
+    [],
+    ['CATEGORY','AMOUNT (PKR)'],
+    ['Civil / Structural', r.civil.total],
+    ['Finishing', r.finishing.total],
+    ['MEP', r.mep.total],
+    ['GRAND TOTAL', r.grandTotal],
+    [],
+    ['Rate per sqft (PKR)', Math.round(r.grandTotal / r.totalCoveredArea)]
+  ];
+  const wsSummary = XLSX.utils.aoa_to_sheet(summary);
+  wsSummary['!cols'] = [{wch:32},{wch:20}];
+  XLSX.utils.book_append_sheet(wb, wsSummary, 'Summary');
+
+  const civil = [
+    ['CIVIL BOQ'],[],
+    ['Item','Qty','Unit','Rate (PKR)','Amount (PKR)'],
+    ['Concrete Work', r.totalCoveredArea, 'sqft', RATES.concrete.rate_per_sqft, r.civil.concreteCost],
+    ['Steel Reinforcement', Math.round(r.civil.steelKg), 'kg', RATES.steelRate, r.civil.steelCost],
+    ['Cement', Math.round(r.civil.cementBags), 'bags', RATES.cementBagRate, r.civil.cementCost],
+    ['Foundation ('+f.foundationType+')', p.coveredAreaPerFloor, 'sqft', RATES.foundationRate[f.foundationType], r.civil.foundationCost],
+    ['Excavation', p.coveredAreaPerFloor, 'sqft', Math.round(r.civil.excavationCostCalc/p.coveredAreaPerFloor)||0, r.civil.excavationCostCalc],
+    [],
+    ['Structural System', s.system],
+    ['Slab Type', s.slabType],
+    ['Slab Thickness (in)', s.slabThickness],
+    ['Column Size (in)', s.columnSize],
+    ['Concrete Grade', s.concreteGrade],
+    ['Steel Ratio', s.steelRatio],
+    ['Soil Type', f.soilType],
+    [],
+    ['','','','TOTAL', r.civil.total]
+  ];
+  const wsCivil = XLSX.utils.aoa_to_sheet(civil);
+  wsCivil['!cols'] = [{wch:28},{wch:12},{wch:10},{wch:14},{wch:16}];
+  XLSX.utils.book_append_sheet(wb, wsCivil, 'Civil BOQ');
+
+  const finishing = [
+    ['FINISHING BOQ'],[],
+    ['Item','Qty (sqft)','Rate (PKR)','Amount (PKR)'],
+    ['Brick Work', r.totalCoveredArea, RATES.brickWork.rate_per_sqft, r.finishing.brickWorkCost],
+    ['Plaster ('+m.plasterType+')', r.totalCoveredArea, RATES.plaster.rate_per_sqft, r.finishing.plasterCost],
+    ['Flooring ('+m.flooring+')', r.totalCoveredArea, RATES.flooring[m.flooring], r.finishing.flooringCost],
+    ['Paint ('+m.paintType+')', r.totalCoveredArea, RATES.paint[m.paintType], r.finishing.paintCost],
+    [],
+    ['Kitchen & Bath Grade', m.kitchenGrade],
+    [],
+    ['','','TOTAL', r.finishing.total]
+  ];
+  const wsFin = XLSX.utils.aoa_to_sheet(finishing);
+  wsFin['!cols'] = [{wch:28},{wch:14},{wch:14},{wch:16}];
+  XLSX.utils.book_append_sheet(wb, wsFin, 'Finishing BOQ');
+
+  const mep = [
+    ['MEP BOQ'],[],
+    ['Item','Qty','Unit','Rate (PKR)','Amount (PKR)'],
+    ['Electrical ('+e.electricalGrade+')', r.totalCoveredArea, 'sqft', RATES.electrical[e.electricalGrade], r.mep.electricalCost],
+    ['Plumbing ('+e.plumbingGrade+')', r.totalCoveredArea, 'sqft', RATES.plumbing[e.plumbingGrade], r.mep.plumbingCost],
+    ['HVAC ('+e.hvac+')', r.totalCoveredArea, 'sqft', RATES.hvacRate[e.hvac], r.mep.hvacCost],
+    ['Elevators', e.elevator, 'nos', RATES.elevatorCostEach, r.mep.elevatorCost],
+    ['Standby Generator', e.generator==='Yes'?1:0, 'set', RATES.generatorCost, r.mep.generatorCost],
+    ['Fire Fighting System', e.fireFighting==='Yes'?r.totalCoveredArea:0, 'sqft', RATES.fireFightingRate, r.mep.fireFightingCost],
+    [],
+    ['','','','TOTAL', r.mep.total]
+  ];
+  const wsMep = XLSX.utils.aoa_to_sheet(mep);
+  wsMep['!cols'] = [{wch:28},{wch:12},{wch:10},{wch:14},{wch:16}];
+  XLSX.utils.book_append_sheet(wb, wsMep, 'MEP BOQ');
+
+  const fname = (p.name || 'BOQ_Estimate').replace(/[^a-z0-9]/gi,'_') + '.xlsx';
+  XLSX.writeFile(wb, fname);
+}
+
+/* ===================== SAVE / LOAD STATE FROM INPUTS ===================== */
+function saveCurrentStep(){
+  if(currentStep===0){
+    const p = state.project;
+    p.name = val('pName'); p.city = val('pCity'); p.location = val('pLocation');
+    p.plotArea = numVal('pPlotArea'); p.coveredAreaPerFloor = numVal('pCoveredArea');
+    p.floors = numVal('pFloors'); p.basements = numVal('pBasements');
+    p.floorHeight = numVal('pHeight'); p.usage = getToggleVal('pUsage') || p.usage;
+  } else if(currentStep===1){
+    const s = state.structural;
+    s.system = getToggleVal('sSystem')||s.system; s.slabType = getToggleVal('sSlabType')||s.slabType;
+    s.slabThickness = numVal('sSlabThk'); s.beamDepth = numVal('sBeamDepth');
+    s.columnSize = val('sColSize'); s.concreteGrade = val('sConcGrade'); s.steelRatio = val('sSteelRatio');
+  } else if(currentStep===2){
+    const f = state.foundation;
+    f.soilType = getToggleVal('fSoil')||f.soilType; f.foundationType = val('fType');
+    f.excavationDepth = numVal('fDepth'); f.waterTable = val('fWater');
+  } else if(currentStep===3){
+    const m = state.finishing;
+    m.brickWork = val('mBrick'); m.plasterType = val('mPlaster'); m.flooring = val('mFlooring');
+    m.paintType = val('mPaint'); m.kitchenGrade = getToggleVal('mKitchen')||m.kitchenGrade;
+  } else if(currentStep===4){
+    const e = state.mep;
+    e.electricalGrade = getToggleVal('eElectrical')||e.electricalGrade;
+    e.plumbingGrade = getToggleVal('ePlumbing')||e.plumbingGrade;
+    e.hvac = val('eHvac'); e.elevator = numVal('eElevator');
+    e.generator = getToggleVal('eGenerator')||e.generator; e.fireFighting = getToggleVal('eFire')||e.fireFighting;
+  }
+}
+function val(id){ const el=document.getElementById(id); return el?el.value:''; }
+function numVal(id){ const el=document.getElementById(id); return el? (Number(el.value)||0) : 0; }
+
+/* ===================== NAVIGATION ===================== */
+function nextStep(){
+  saveCurrentStep();
+  if(currentStep < steps.length-1){ currentStep++; render(); }
+}
+function prevStep(){
+  saveCurrentStep();
+  if(currentStep > 0){ currentStep--; render(); }
+}
+
+/* ===================== MAIN RENDER ===================== */
+const stepRenderers = [renderStep0, renderStep1, renderStep2, renderStep3, renderStep4, renderStep5];
+function render(){
+  renderStepper();
+  const container = document.getElementById('stepContainer');
+  container.innerHTML = stepRenderers[currentStep]();
+  const navHtml = `<div class="nav-buttons">
+    ${currentStep>0 ? '<button class="btn btn-secondary" onclick="prevStep()">← Back</button>' : ''}
+    ${currentStep<steps.length-1 ? '<button class="btn btn-primary" onclick="nextStep()">Next →</button>' : ''}
+  </div>`;
+  container.insertAdjacentHTML('beforeend', navHtml);
+}
+render();
+</script>
+</body>
+</html>
