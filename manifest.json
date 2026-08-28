@@ -13,6 +13,15 @@
   "lang": "en-PK",
   "dir": "ltr",
   "categories": ["business", "productivity", "utilities"],
+  "shortcuts": [
+    {
+      "name": "New Estimate",
+      "short_name": "New",
+      "description": "Start a fresh BOQ estimate",
+      "url": "./index.html?action=new",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    }
+  ],
   "icons": [
     {
       "src": "icon-192.png",

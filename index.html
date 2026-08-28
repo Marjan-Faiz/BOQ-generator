@@ -157,6 +157,11 @@ input:focus,select:focus{outline:none;border-color:var(--primary);}
 .badge{display:inline-block;background:var(--primary-light);color:var(--primary-dark);font-size:0.7rem;padding:2px 8px;border-radius:10px;margin-left:6px;}
 footer{text-align:center;color:var(--text-muted);font-size:0.72rem;padding:20px;}
 @media(max-width:400px){.row{flex-direction:column;}}
+@media print{
+  .app-header,.stepper,.nav-buttons,footer{display:none !important;}
+  body{background:#fff;}
+  .card{box-shadow:none;border:1px solid #ccc;}
+}
 </style>
 </head>
 <body>
@@ -400,6 +405,7 @@ function renderStep5(){
     <h2><span class="icon">📥</span> Export Workbook</h2>
     <p class="hint">Downloads a 4-sheet Excel file: Summary, Civil BOQ, Finishing BOQ, MEP BOQ — with live formulas.</p>
     <button class="btn btn-export" style="width:100%;margin-top:10px;" onclick="exportExcel()">Download Excel BOQ (.xlsx)</button>
+    <button class="btn btn-secondary" style="width:100%;margin-top:10px;" onclick="window.print()">Print / Save as PDF</button>
   </div>`;
 }
 
@@ -525,12 +531,25 @@ function numVal(id){ const el=document.getElementById(id); return el? (Number(el
 /* ===================== NAVIGATION ===================== */
 function nextStep(){
   saveCurrentStep();
+  if(currentStep===0 && (!state.project.coveredAreaPerFloor || !state.project.floors)){
+    alert('Meherbani karke Covered Area aur Floors zaroor darj karein.');
+    return;
+  }
   if(currentStep < steps.length-1){ currentStep++; render(); }
 }
 function prevStep(){
   saveCurrentStep();
   if(currentStep > 0){ currentStep--; render(); }
 }
+
+/* ===================== SHORTCUT HANDLING (New Estimate) ===================== */
+(function handleShortcut(){
+  const params = new URLSearchParams(window.location.search);
+  if(params.get('action') === 'new'){
+    currentStep = 0;
+    history.replaceState(null, '', window.location.pathname);
+  }
+})();
 
 /* ===================== MAIN RENDER ===================== */
 const stepRenderers = [renderStep0, renderStep1, renderStep2, renderStep3, renderStep4, renderStep5];
