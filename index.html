@@ -260,7 +260,7 @@ function getToggleVal(groupId){
 function renderStep0(){
   const p = state.project;
   return `<div class="card">
-    <h2><span class="icon">🏗️</span> Project Information</h2>
+    <h2>Project Information</h2>
     ${field('Project Name','pName','text',p.name,'','placeholder="e.g. Al-Noor Heights"')}
     ${selectField('City','pCity',['Lahore','Karachi','Islamabad','Rawalpindi','Faisalabad','Multan','Peshawar','Other'],p.city)}
     ${field('Location / Address','pLocation','text',p.location)}
@@ -279,7 +279,7 @@ function renderStep0(){
 function renderStep1(){
   const s = state.structural;
   return `<div class="card">
-    <h2><span class="icon">🏛️</span> Structural System</h2>
+    <h2>Structural System</h2>
     <div class="note-box">Thumb-rule coefficients applied per sqft of total covered area, standard for Pakistani highrise RCC framed structures.</div>
     ${toggleField('Structural System','sSystem',['RCC Frame','Shear Wall + Frame','Flat Slab System'],s.system)}
     ${toggleField('Slab Type','sSlabType',['Flat Slab','Beam & Slab','Waffle Slab'],s.slabType)}
@@ -295,7 +295,7 @@ function renderStep1(){
 function renderStep2(){
   const f = state.foundation;
   return `<div class="card">
-    <h2><span class="icon">⛏️</span> Excavation &amp; Foundation</h2>
+    <h2>Excavation &amp; Foundation</h2>
     ${toggleField('Soil Type','fSoil',['Soft','Medium','Hard/Rocky'],f.soilType)}
     ${selectField('Foundation Type','fType',Object.keys(RATES.foundationRate),f.foundationType,'Raft/Pile recommended for highrise (G+8 and above)')}
     <div class="row">
@@ -307,7 +307,7 @@ function renderStep2(){
 function renderStep3(){
   const m = state.finishing;
   return `<div class="card">
-    <h2><span class="icon">🧱</span> Masonry &amp; Finishing</h2>
+    <h2>Masonry &amp; Finishing</h2>
     ${selectField('Brick Work Thickness','mBrick',['4.5" & 9"','9" only','4.5" only (partitions)'],m.brickWork)}
     ${selectField('Plaster Type','mPlaster',['Sand-Cement 1:6','Sand-Cement 1:4','Gypsum Plaster'],m.plasterType)}
     ${selectField('Flooring','mFlooring',Object.keys(RATES.flooring),m.flooring)}
@@ -318,7 +318,7 @@ function renderStep3(){
 function renderStep4(){
   const e = state.mep;
   return `<div class="card">
-    <h2><span class="icon">⚡</span> MEP &amp; Services</h2>
+    <h2>MEP &amp; Services</h2>
     ${toggleField('Electrical Wiring Grade','eElectrical',Object.keys(RATES.electrical),e.electricalGrade)}
     ${toggleField('Plumbing Grade','ePlumbing',Object.keys(RATES.plumbing),e.plumbingGrade)}
     ${selectField('HVAC / Cooling Provision','eHvac',Object.keys(RATES.hvacRate),e.hvac)}
@@ -390,7 +390,7 @@ function fmt(n){ return Math.round(n).toLocaleString('en-PK'); }
 function renderStep5(){
   const r = calculate();
   return `<div class="card">
-    <h2><span class="icon">📊</span> Review &amp; Export</h2>
+    <h2>Review &amp; Export</h2>
     <div class="note-box">Total Covered Area: <b>${fmt(r.totalCoveredArea)} sqft</b> across ${r.totalFloors} level(s). Rates based on standard thumb-rule coefficients — adjust in a future version for city-specific market rates.</div>
     <table class="summary-table">
       <tr><th>Category</th><th class="num">Amount (PKR)</th></tr>
@@ -402,7 +402,7 @@ function renderStep5(){
     <div class="hint" style="margin-top:8px;">≈ PKR ${fmt(r.grandTotal / r.totalCoveredArea)} per sqft of covered area</div>
   </div>
   <div class="card">
-    <h2><span class="icon">📥</span> Export Workbook</h2>
+    <h2>Export Workbook</h2>
     <p class="hint">Downloads a 4-sheet Excel file: Summary, Civil BOQ, Finishing BOQ, MEP BOQ — with live formulas.</p>
     <button class="btn btn-export" style="width:100%;margin-top:10px;" onclick="exportExcel()">Download Excel BOQ (.xlsx)</button>
     <button class="btn btn-secondary" style="width:100%;margin-top:10px;" onclick="window.print()">Print / Save as PDF</button>
